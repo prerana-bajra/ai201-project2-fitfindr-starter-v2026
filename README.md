@@ -308,15 +308,27 @@ that produced it:
 **Empty search**
 
 ```
+[1] parse_query
+     in:  designer ballgown size XXS under $5
+     out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+     in:  dict with keys: description, size, max_price
+     out: [] (empty)
+     →    0 match(es)
+[3] branch
+     →    search returned []: stopping before suggest_outfit
 
 ```
 
-**On the MCP move:** <!-- what changed in your code, and whether anything
-behaved differently afterwards. If the rewire didn't work, say exactly where it
-broke — the error text and the last thing that worked. That earns the point in
-full. -->
+**On the MCP move:**
 
+I registered `search_listings` in `mcp_server.py` with typed inputs for
+`description`, `size`, and `max_price`. In `agent.py::run_agent`, I replaced
+the direct search call with `call_tool("search_listings", session["parsed"])`.
 
+The MCP client returned the same list-shaped result as the direct function.
+The empty-search query returned an empty list, and the agent stopped before
+calling `suggest_outfit`, so the existing branch behavior did not change.
 
 ---
 

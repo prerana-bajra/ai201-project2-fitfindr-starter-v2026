@@ -18,6 +18,7 @@ import re
 import trace
 from tools import search_listings, suggest_outfit, create_fit_card
 from generate import ModelUnavailable
+from mcp_client import call_tool
 
 
 # ── session state ─────────────────────────────────────────────────────────────
@@ -132,28 +133,50 @@ def run_agent(query: str, wardrobe: dict) -> dict:
         "size": size_match.group(1) if size_match else None,
         "max_price": float(price_match.group(1)) if price_match else None,
     }
+    trace.step("parse_query", inputs=query, returned=session["parsed"])
 
     iterations += 1
     trace.check_iterations(iterations)
-    session["search_results"] = search_listings(**session["parsed"])
+    session["search_results"] = call_tool("search_listings", session["parsed"])
+    trace.step(
+        "search_listings (via MCP)",
+        inputs=session["parsed"],
+        returned=session["search_results"],
+        note=f"{len(session['search_results'])} match(es)",
+    )
     if not session["search_results"]:
         session["error"] = (
             "No listings matched. Try different keywords, a broader size, "
             "or a higher price limit."
         )
+        trace.step(
+            "branch",
+            note="search returned []: stopping before suggest_outfit",
+        )
         return session
 
     session["selected_item"] = session["search_results"][0]
+    trace.step("select_item", returned=session["selected_item"])
     iterations += 1
     trace.check_iterations(iterations)
     session["outfit_suggestion"] = suggest_outfit(
         session["selected_item"], session["wardrobe"]
+    )
+    trace.step(
+        "suggest_outfit",
+        inputs=session["selected_item"],
+        returned=session["outfit_suggestion"],
     )
 
     iterations += 1
     trace.check_iterations(iterations)
     session["fit_card"] = create_fit_card(
         session["outfit_suggestion"], session["selected_item"]
+    )
+    trace.step(
+        "create_fit_card",
+        inputs=session["selected_item"],
+        returned=session["fit_card"],
     )
     return session
 
