@@ -159,9 +159,21 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     trace.step("select_item", returned=session["selected_item"])
     iterations += 1
     trace.check_iterations(iterations)
-    session["outfit_suggestion"] = suggest_outfit(
-        session["selected_item"], session["wardrobe"]
-    )
+    try:
+        session["outfit_suggestion"] = suggest_outfit(
+            session["selected_item"], session["wardrobe"]
+        )
+    except ModelUnavailable:
+        session["error"] = (
+            "The outfit stylist could not reach the model. Check your API key "
+            "and network connection, then try this request again."
+        )
+        trace.step(
+            "suggest_outfit",
+            inputs=session["selected_item"],
+            note="model unavailable: stopping before create_fit_card",
+        )
+        return session
     trace.step(
         "suggest_outfit",
         inputs=session["selected_item"],
@@ -170,9 +182,21 @@ def run_agent(query: str, wardrobe: dict) -> dict:
 
     iterations += 1
     trace.check_iterations(iterations)
-    session["fit_card"] = create_fit_card(
-        session["outfit_suggestion"], session["selected_item"]
-    )
+    try:
+        session["fit_card"] = create_fit_card(
+            session["outfit_suggestion"], session["selected_item"]
+        )
+    except ModelUnavailable:
+        session["error"] = (
+            "The fit-card writer could not reach the model. Check your API key "
+            "and network connection, then try this request again."
+        )
+        trace.step(
+            "create_fit_card",
+            inputs=session["selected_item"],
+            note="model unavailable",
+        )
+        return session
     trace.step(
         "create_fit_card",
         inputs=session["selected_item"],
