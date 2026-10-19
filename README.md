@@ -105,13 +105,21 @@ of calling the later tools.
      The grader checks your code against what you claim here, so the file and
      function have to be real. -->
 
-**Branch rule:**
+**Branch rule:** If `search_listings` returns an empty list, store an
+explanation in `session["error"]` and stop before calling
+`suggest_outfit`. Otherwise, store the first result as
+`session["selected_item"]`, call `suggest_outfit`, store its result, and then
+call `create_fit_card`.
 
 **Where it lives:** `agent.py::run_agent`
 
-**How the query is parsed:** <!-- regex, string splitting, or asking the model — say which -->
+**How the query is parsed:** Regular expressions extract an optional price
+ceiling and size; the remaining text is the description.
 
-**What moves through the session:** <!-- which fields, in what order -->
+**What moves through the session:** The parsed query goes to
+`search_results`; the first result goes to `selected_item`; that same item and
+the wardrobe go to `outfit_suggestion`; then the same item and outfit go to
+`fit_card`.
 
 ---
 
@@ -125,7 +133,27 @@ of calling the later tools.
 **One full query**
 
 ```
-$ python app.py ask '...'
+$ python app.py ask 'vintage graphic tee under $30'
+
+  Found:    Y2K Baby Tee — Butterfly Print — $18.0 on depop
+
+  Outfit:   **Outfit 1: Y2K Streetwear**
+*   **Top:** Y2K Butterfly Baby Tee
+*   **Bottoms:** Baggy straight-leg jeans (dark wash)
+*   **Shoes:** Chunky white sneakers
+*   **Outerwear:** Black cropped zip hoodie
+*   **Accessory:** Black crossbody bag
+
+**Outfit 2: Casual Contrast**
+*   **Top:** Y2K Butterfly Baby Tee
+*   **Bottoms:** Wide-leg khaki trousers
+*   **Accessory:** Brown leather belt
+*   **Shoes:** Chunky white sneakers
+*   **Outerwear:** Vintage black denim jacket
+
+  Fit card: Channeling major early-2000s energy with this sweet graphic top. I paired the Y2K Baby Tee — Butterfly Print with baggy denim and chunky kicks for the ultimate off-duty look. Snagged it on depop for just $18.0, and honestly, I haven't taken it off since.
+
+0 model calls this session, 2 served from cache
 
 ```
 
@@ -134,15 +162,38 @@ $ python app.py ask '...'
 ```
 $ python -c "from tools import search_listings; print(search_listings('graphic tee', max_price=30))"
 
+
+[{'id': 'lst_002', 'title': 'Y2K Baby Tee — Butterfly Print', 'description': 'Super cute early 2000s baby tee with butterfly graphic. Fitted crop length. Tag says medium but fits like a small.', 'category': 'tops', 'style_tags': ['y2k', 'vintage', 'graphic tee', 'cottagecore'], 'size': 'S/M', 'condition': 'excellent', 'price': 18.0, 'colors': ['white', 'pink', 'purple'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_006', 'title': 'Graphic Tee — 2003 Tour Bootleg Style', 'description': 'Vintage-style bootleg tee with faded graphic. Slightly boxy fit. 100% cotton, soft and worn-in.', 'category': 'tops', 'style_tags': ['graphic tee', 'vintage', 'grunge', 'streetwear', 'band tee'], 'size': 'L', 'condition': 'good', 'price': 24.0, 'colors': ['black'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_017','title': 'Mesh Long-Sleeve Top — Black', 'description': 'Sheer black mesh long-sleeve. Great for layering under a graphic tee or over a bralette. Stretchy material, fits true to size.', 'category': 'tops', 'style_tags': ['y2k', 'grunge', 'goth', 'layering'], 'size': 'S/M', 'condition': 'excellent', 'price': 15.0, 'colors': ['black'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_033', 'title': 'Vintage Band Tee — Faded Grey', 'description': 'Faded grey band-style tee with distressed graphic. Crew neck. Fits boxy. Well-loved but no holes or major damage.', 'category': 'tops', 'style_tags': ['vintage', 'grunge', 'band tee', 'graphic tee', 'streetwear'], 'size': 'L', 'condition': 'fair', 'price': 19.0, 'colors': ['grey', 'charcoal'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_011', 'title': 'Low-Rise Cargo Pants — Khaki', 'description': 'Y2K era low-rise cargo pants. Lots of pockets. Khaki color, slightly distressed at the hems. Great for layering with a long tee.', 'category': 'bottoms', 'style_tags': ['y2k', 'cargo', '2000s', 'streetwear'], 'size': 'W29', 'condition': 'fair', 'price': 27.0, 'colors': ['khaki', 'tan'], 'brand': None, 'platform': 'poshmark'}, {'id': 'lst_015', 'title': 'Vintage Graphic Hoodie — Faded Black', 'description': 'Faded black pullover hoodie with barely-visible vintage graphic on the chest. Cozy interior. Some pilling but adds to the worn-in look.', 'category': 'tops', 'style_tags': ['vintage', 'grunge', 'graphic', 'streetwear'], 'size': 'L', 'condition': 'fair', 'price': 26.0, 'colors': ['black', 'charcoal'], 'brand': None, 'platform': 'depop'}]
 ```
 
+
 ```
-$ python -c "from tools import suggest_outfit; ..."
+$ python -c "from tools import suggest_outfit; from utils.data_loader import get_example_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_example_wardrobe()))"
+
+
+Here are two complete outfits featuring your new Vintage Levi's 501 Jeans:
+
+**Outfit 1: Casual & Classic**
+*   **Top:** White ribbed tank top
+*   **Outerwear:** Vintage black denim jacket
+*   **Shoes:** Chunky white sneakers
+*   **Accessories:** Brown leather belt, Black crossbody bag
+*   *Vibe:* Effortless, everyday cool with a balanced high-contrast denim look.
+
+**Outfit 2: Cozy Streetwear**
+*   **Top:** Oversized grey crewneck sweatshirt
+*   **Shoes:** Black combat boots
+*   **Accessories:** Black crossbody bag
+*   *Vibe:* Relaxed and slightly edgy, letting the straight-leg vintage fit of the 501s shine with chunkier footwear.
 
 ```
 
+
+
 ```
-$ python -c "from tools import create_fit_card; ..."
+$ python -c "from tools import create_fit_card; from utils.data_loader import load_listings; print(create_fit_card('jeans and white sneakers', load_listings()[0]))"
+
+Finally found the holy grail of denim on depop. These Vintage Levi's 501 Jeans in Medium Wash have that perfectly worn-in slouch I’ve been hunting for. Paired with my crispest white sneakers, it’s the ultimate effortless Sunday uniform for just $38.0.
 
 ```
 
@@ -159,15 +210,15 @@ $ python -c "from tools import create_fit_card; ..."
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked for help checking why size matching was not working.
+- *What came back:* The problem was that `.upper` referenced the method instead of calling it.
+- *What I changed:* I changed `p.strip().upper` to `p.strip().upper()`.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked for help checking the planning loop against the Unit 3 branch requirement.
+- *What came back:* The loop needed to stop when `search_listings` returned an empty list.
+- *What I changed:* I stored the empty-search explanation in `session["error"]` and returned before calling `suggest_outfit`.
 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
