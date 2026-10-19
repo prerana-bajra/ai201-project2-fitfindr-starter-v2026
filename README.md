@@ -220,6 +220,18 @@ Finally found the holy grail of denim on depop. These Vintage Levi's 501 Jeans i
 - *What came back:* The loop needed to stop when `search_listings` returned an empty list.
 - *What I changed:* I stored the empty-search explanation in `session["error"]` and returned before calling `suggest_outfit`.
 
+**Moment 3**
+
+- *What I asked for:* I asked how to move `search_listings` behind MCP without changing the tool's return value.
+- *What came back:* The server needed a registered function with typed inputs, and the agent needed to call it through `mcp_client.call_tool`.
+- *What I changed:* I registered the tool in `mcp_server.py`, rewired `run_agent`, and verified that the MCP call still returned a list and preserved the empty-search branch.
+
+**Moment 4**
+
+- *What I asked for:* I asked for help diagnosing the one failed before-run and choosing one measurable improvement.
+- *What came back:* The failed run stopped in the model-backed outfit step because the model was unavailable; the fit-card prompt could also state its output requirements more explicitly.
+- *What I changed:* I added a fit-card self-check to the prompt, reran the same five-try evaluation, and compared the before and after reports.
+
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
      Don't fill these in during unit 3.
@@ -471,6 +483,14 @@ The complete after-run evidence is in
      you did. "I ran out of time" is fine if it's true. Pretending nothing is
      left is not. -->
 
+No acceptance criterion remained missed after the improvement: all five
+criteria met their targets in the after-run. The remaining operational
+limitation is that a temporary model or network failure still stops a matching
+request instead of retrying it. The `ModelUnavailable` handlers give the user
+an actionable message, but I stopped after one improvement as required by this
+milestone. A future improvement would add a bounded retry with a clear
+backoff, then measure whether matching queries complete more reliably without
+creating duplicate or excessive model calls.
 
 
 <!-- ═════════════════════════════════════════════════════════════════════
