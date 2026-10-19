@@ -41,7 +41,12 @@
 
 <!-- Three or four sentences: what a user asks for, and what they get back. -->
 
-
+FitFindr accepts a natural-language request for a thrifted item, including
+optional size and price constraints. It searches the listings data, selects the
+best matching listing, and passes that item to a stylist for outfit ideas.
+Finally, it creates a short fit-card caption containing the item, price, and
+platform. If no listing matches, it explains how to broaden the search instead
+of calling the later tools.
 
 ---
 
@@ -59,24 +64,31 @@
 
 ### `search_listings`
 
-- **What it does:**
-- **Inputs:** <!-- name and type each: `max_price` (float), not "a price" -->
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Searches listings by description keywords, optional size,
+  and optional inclusive maximum price.
+- **Inputs:** `description` (str), `size` (str | None), `max_price` (float | None).
+- **Returns:** A list of matching listing dicts containing the listing fields,
+  ordered by keyword score and limited by `config.SEARCH_RESULT_LIMIT`.
+- **When it has nothing:** Returns an empty list.
 
 ### `suggest_outfit`
 
-- **What it does:**
-- **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Suggests one or two outfits using the selected listing and
+  the user's existing wardrobe.
+- **Inputs:** `new_item` (dict), `wardrobe` (dict with an `items` list).
+- **Returns:** A non-empty model-generated outfit suggestion string.
+- **When it has nothing:** With an empty wardrobe, returns general styling
+  advice rather than requiring wardrobe items.
 
 ### `create_fit_card`
 
-- **What it does:**
-- **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Turns an outfit suggestion and selected listing into a
+  concise social-media fit-card caption.
+- **Inputs:** `outfit` (str), `new_item` (dict).
+- **Returns:** A model-generated two-to-four sentence caption mentioning the
+  item, price, platform, and outfit vibe.
+- **When it has nothing:** If `outfit` is empty or whitespace, returns a
+  descriptive message and does not call the model.
 
 ---
 
