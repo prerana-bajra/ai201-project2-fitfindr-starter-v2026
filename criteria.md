@@ -54,9 +54,13 @@ Given a query that matches no listings, the agent stops before calling
      compares session["selected_item"] against what actually reached
      suggest_outfit is the shape you're after. -->
 
+For 5 of 5 matching queries, the listing ID in
+`session["selected_item"]` is the same listing ID received by
+`suggest_outfit`.
 
-
-**Why this target:**
+**Why this target:** The selected item is the key piece of state passed between
+the search and styling tools. Checking its ID directly makes the handoff
+observable without depending on the model's wording.
 
 
 
@@ -75,9 +79,11 @@ Given a query that matches no listings, the agent stops before calling
      sentence? A card longer than a caption anyone would post? Any of those can
      be turned into a number. -->
 
+For 4 of 5 matching queries, the fit card is two to four sentences and
+mentions the selected item's title, price, and platform.
 
-
-**Why this target:**
+**Why this target:** The model may vary its wording, but these details are
+required by the tool contract and can be checked consistently.
 
 
 
@@ -94,7 +100,12 @@ Given a query that matches no listings, the agent stops before calling
 
 
 
-**Why this target:**
+For 5 of 5 matching queries, a price ceiling is respected: every returned
+listing has `price <= max_price`.
+
+**Why this target:** Price is an explicit user constraint and a numeric check
+shows whether the search tool is filtering data rather than merely matching
+keywords.
 
 
 
