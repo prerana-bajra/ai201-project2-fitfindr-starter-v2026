@@ -240,17 +240,47 @@ Finally found the holy grail of denim on depop. These Vintage Levi's 501 Jeans i
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1. Matching query completes all three tools | 4 of 5 | PASS | PASS | PASS | FAIL | PASS | MET (4/5) |
+| 2. Impossible query stops before the second tool | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 3. Selected item reaches the stylist unchanged | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 4. Fit card includes title, price, and platform | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 5. Price ceiling is respected | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
-**Real output from one try**, pasted as text, naming the file and function
-that produced it:
+**Real output from one try**, from
+`results/run_2026-10-19_0218_before.md`, produced by
+`run_eval.py::main` calling `agent.py::run_agent`:
 
 ```
+### matching query completes
+- Query: `vintage graphic tee under $30`
+- stopped early: no
+- selected_item: Y2K Baby Tee — Butterfly Print ($18.0, depop)
+- search_results: 10
 
+### impossible query stops early
+- Query: `designer ballgown size XXS under $5`
+- stopped early: yes — No listings matched. Try different keywords, a broader size, or a higher price limit.
+- selected_item: (none)
+- search_results: 0
+
+### selected item reaches stylist
+- Query: `vintage graphic tee under $30`
+- selected_item: Y2K Baby Tee — Butterfly Print ($18.0, depop)
+- search_results: 10
+
+### fit card includes listing details
+- Query: `platform sneakers size 8`
+- selected_item: Platform Sneakers — White Chunky Sole ($48.0, poshmark)
+- search_results: 1
+Fit card:
+These Platform Sneakers — White Chunky Sole give off the ultimate off-duty vibe,
+whether I'm leaning into effortless Y2K streetwear or throwing on an oversized
+crewneck. I scored them on poshmark for just $48.0.
+
+### price ceiling is respected
+- Query: `platform sneakers under $50`
+- selected_item: Platform Sneakers — White Chunky Sole ($48.0, poshmark)
+- search_results: 2
 ```
 
 ---
